@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 export class PatientSearchComponent implements OnInit {
   public patients: [];
   public title: string = 'Patient Search';
+  public adjustInputMargin: string = '240px';
   public errorMessage: string = '';
   public hasConductedSearch: boolean = false;
   public hideResults: boolean = false;
@@ -42,7 +43,6 @@ export class PatientSearchComponent implements OnInit {
 
   public ngOnInit() {
     this.route.queryParams.subscribe((params) => {
-      console.log('query params: ', params);
       if (params['reset'] !== undefined) {
         this.resetSearchList();
       } else {
@@ -59,7 +59,6 @@ export class PatientSearchComponent implements OnInit {
   }
 
   public onResultsFound(results) {
-    console.log('onResults found called with: ', results);
     if (results.length > 0) {
       this.patients = results;
       this.totalPatients = this.patients.length;
@@ -74,15 +73,14 @@ export class PatientSearchComponent implements OnInit {
   }
 
   public onError(error) {
-    console.log('onError called with: ', error);
     this.isLoading = false;
+    this.resetInputMargin();
     console.error('error', error);
     this.errorMessage = error;
     this.hasConductedSearch = false;
   }
 
   public loadPatient(): void {
-    console.log('Load patient invoked');
     this.totalPatients = 0;
     if (this.subscription) {
       this.subscription.unsubscribe();
@@ -93,7 +91,6 @@ export class PatientSearchComponent implements OnInit {
       this.errorMessage = '';
       this.subscription = this.patientSearchService.searchPatient(this.searchString)
         .subscribe((data) => {
-          console.log('Data from subbing to patientSearchService#searchPatient: ', data);
           this.isLoading = false;
           const searchTerm = this.searchString;
           this.onResultsFound(data);
@@ -101,6 +98,7 @@ export class PatientSearchComponent implements OnInit {
             this.noMatchingResults = true;
             this.lastSearchString = searchTerm;
           }
+          this.resetInputMargin();
         },
         (error) => {
           this.onError(error);
@@ -117,19 +115,20 @@ export class PatientSearchComponent implements OnInit {
     this.isResetButton = false;
     this.isLoading = false;
     this.hasConductedSearch = false;
-    // this.resetInputMargin();
+    this.resetInputMargin();
     this.noMatchingResults = false;
   }
-
-  // public selectPatient(patient) {
-  //   this.router.navigateByUrl('/patientdashboard/' + patient.uuid + '/patient-info');
-  //   this.hideResults = true;
-  // }
 
   public updatePatientCount(search) {
     if (this.totalPatients > 0 && search.length > 0) {
       this.totalPatients = 0;
     }
     this.noMatchingResults = false;
+  }
+
+  public resetInputMargin() {
+    if (window.innerWidth > 768) {
+      this.adjustInputMargin = '240px';
+    }
   }
 }
